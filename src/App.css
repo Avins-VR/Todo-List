@@ -2,12 +2,29 @@ body, html {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #be5688, #aa66bf);
-backdrop-filter: blur(20px);
+
+  /* Animated gradient background */
+  background: linear-gradient(-45deg, #311595, #030020, #3b82f6, #030020);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Define the gradient animation */
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .app {
