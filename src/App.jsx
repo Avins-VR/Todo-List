@@ -19,6 +19,29 @@ function App() {
 
   return (
     <div className="app">
+      <div className="image-animations">
+    {Array.from({ length: 60}).map((_, i) => (
+      <div key={`star-${i}`} className="shape star"
+        style={{
+          top: `${Math.random() * 100}%`,
+          left: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 2}s`,
+          animationDuration: `${2 + Math.random() * 2}s`
+        }}
+      ></div>
+    )) }
+
+    {Array.from({ length: 30}).map((_, i) => (
+      <div key={`hex-${i}`} className="shape hexagon"
+        style={{
+          top: `${Math.random() * 100}%`,
+          left: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 2}s`,
+          animationDuration: `${5 + Math.random() * 5}s`
+        }}
+      ></div>
+    ))}
+  </div>
       <div className="todo-container">
         <h1>
           FOCUSFLOW TODO LIST <span className="checkmark">✅</span>
@@ -37,7 +60,9 @@ function App() {
             <li key={index}>
               <input type="checkbox" />
               <span>{todo.text}</span>
-              <button onClick={() => deleteTodo(index)}>Delete</button>
+              <button className="delete-icon" onClick={() => deleteTodo(index)}>
+              <i className="bi bi-trash"></i>
+              </button>
             </li>
           ))}
         </ul>

@@ -1,30 +1,22 @@
+/* ✅ Base layout & background */
 body, html {
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
-
-  /* Animated gradient background */
-  background: linear-gradient(-45deg, #311595, #030020, #3b82f6, #030020);
+  background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
-
+  
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Define the gradient animation */
 @keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .app {
@@ -32,20 +24,65 @@ body, html {
   max-width: 400px;
 }
 
+.shape.hexagon {
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #5EA3F2; 
+  opacity: 0.3;
+  position: absolute;
+  animation: float 7s linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(-100vh) rotate(0deg); }
+  50% { transform: translateY(-50vh) rotate(180deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+
+.stars {
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  width: 5px;                 
+  height: 5px;
+  background: #ffffff88;       
+  border-radius: 50%;          
+  animation: drift 60s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes drift {
+  0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.8; }
+  50% { opacity: 0.5; }
+  100% { transform: translateY(-200px) translateX(50px) scale(1.2); opacity: 0.8; }
+}
 .todo-container {
   background: white;
   padding: 30px;
   border-radius: 20px;
   width: 500px;
-  margin-left:-100px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+ margin-left:-100px;
+ margin-top: 0px;
+ margin-bottom: 0px;
+ margin-right: auto;
+}
+.todo-container:hover {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  background: rgb(192, 191, 191);
 }
 
 h1 {
   text-align: center;
   font-weight: 700;
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 .checkmark {
@@ -56,17 +93,23 @@ h1 {
 .input-container {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .input-container input {
-  flex: 1;
+  flex: 1 1 200px;
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #878686;
+  border: 1px solid #7a7878;
+}
+
+.input-container input:hover {
+  border-color: #2e2f2f;
 }
 
 .input-container button {
+  flex: 0 0 auto;
   padding: 10px 20px;
   background-color: #3b82f6;
   color: white;
@@ -93,6 +136,7 @@ li {
   border-radius: 10px;
   margin-bottom: 10px;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 li span {
@@ -100,15 +144,131 @@ li span {
 }
 
 li button {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: bold;
+  background: none;       
+  border: none;           
   cursor: pointer;
+  color: #ef4444;         
+  font-size: 1.2rem;      
+  display: flex;
+  align-items: center;
+  padding: 5px;
 }
 
 li button:hover {
-  background-color: #dc2626;
+  color: #dc2626;         
+}
+
+/* ✅ Responsive breakpoints */
+
+/* 📱 Small mobiles (<= 360px) */
+@media (max-width: 360px) {
+  .todo-container {
+    width: 90%;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+  }
+
+  .checkmark {
+    font-size: 1.5rem;
+  }
+
+  .input-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .input-container input,
+  .input-container button {
+    width: 100%;
+  }
+
+  li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  li button {
+    width: 100%;
+    margin-top: 8px;
+    text-align: right;
+  }
+}
+
+/* 📱 Large mobiles (<= 480px) */
+@media (max-width: 480px) {
+  .todo-container {
+    width: 90%;
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .input-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .input-container input,
+  .input-container button {
+    width: 100%;
+  }
+
+  li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  li button {
+    width: 100%;
+    margin-top: 8px;
+    text-align: right;
+  }
+}
+
+/* 📲 Tablets (<= 760px) */
+@media (max-width: 760px) {
+  .todo-container {
+    width: 90%;
+    padding: 30px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  .input-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .input-container input {
+    flex: 1 1 100%;
+  }
+
+  li {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  li button {
+    width: auto;
+    margin-top: 0;
+  }
+}
+
+/* 🖥️ Small desktops & large tablets (<= 1024px) */
+@media (max-width: 1024px) {
+  .todo-container {
+    width: 90%;
+    padding: 35px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
 }
