@@ -90,7 +90,7 @@ function App() {
         <div className="header-left">
           <div className="header-icon">✨</div>
           <div>
-            <h1 className="title">Premium Tasks</h1>
+            <h1 className="title">Focusflow Tasks</h1>
             <p className="subtitle">Stay organized, stay productive</p>
           </div>
         </div>
