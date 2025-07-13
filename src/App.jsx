@@ -9,6 +9,8 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
 
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -16,10 +18,18 @@ function App() {
   const [newCategory, setNewCategory] = useState("Work");
   const [newDueDate, setNewDueDate] = useState("");
 
+  const [showMenuId, setShowMenuId] = useState(null);
+
   const completionRate =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  const sortTasksByPriority = (taskList) => {
+    const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+    return taskList.sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+    );
+  };
 
-  const handleAddTask = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!newTitle.trim()) {
@@ -27,28 +37,46 @@ function App() {
       return;
     }
 
-    const newTask = {
-      id: Date.now(),
-      title: newTitle,
-      description: newDescription,
-      priority: newPriority,
-      category: newCategory,
-      dueDate: newDueDate,
-      completed: false,
-    };
+    if (isEditing && taskToEdit) {
+      const updatedTasks = tasks.map((task) =>
+        task.id === taskToEdit.id
+          ? {
+              ...task,
+              title: newTitle,
+              description: newDescription,
+              priority: newPriority,
+              category: newCategory,
+              dueDate: newDueDate,
+            }
+          : task
+      );
+      setTasks(sortTasksByPriority(updatedTasks));
+    } else {
+      const newTask = {
+        id: Date.now(),
+        title: newTitle,
+        description: newDescription,
+        priority: newPriority,
+        category: newCategory,
+        dueDate: newDueDate,
+        completed: false,
+      };
 
-    setTasks([newTask, ...tasks]);
-    setTotalTasks(totalTasks + 1);
-    setActiveTasks(activeTasks + 1);
-
+      setTasks(sortTasksByPriority([newTask, ...tasks]));
+      setTotalTasks(totalTasks + 1);
+      setActiveTasks(activeTasks + 1);
+    }
+    setIsModalOpen(false);
+    setIsEditing(false);
+    setTaskToEdit(null);
     setNewTitle("");
     setNewDescription("");
     setNewPriority("Medium");
     setNewCategory("Work");
     setNewDueDate("");
-
-    setIsModalOpen(false);
+    setShowMenuId(null);
   };
+
   const toggleTaskCompletion = (id) => {
     const updatedTasks = tasks.map((task) => {
       if (task.id === id) {
@@ -69,9 +97,9 @@ function App() {
 
     setTasks(updatedTasks);
   };
+
   const deleteTask = (id) => {
     const taskToDelete = tasks.find((task) => task.id === id);
-
     if (!taskToDelete) return;
 
     if (taskToDelete.completed) {
@@ -82,44 +110,79 @@ function App() {
 
     setTotalTasks(totalTasks - 1);
     setTasks(tasks.filter((task) => task.id !== id));
+    setShowMenuId(null);
+  };
+
+  const handleEdit = (task) => {
+    setIsEditing(true);
+    setTaskToEdit(task);
+    setNewTitle(task.title);
+    setNewDescription(task.description);
+    setNewPriority(task.priority);
+    setNewCategory(task.category);
+    setNewDueDate(task.dueDate);
+    setIsModalOpen(true);
+    setShowMenuId(null);
   };
 
   return (
     <div className="dashboard">
       <div className="header">
         <div className="header-left">
-          <div className="header-icon">✨</div>
+          <div className="header-icon">
+            <i className="bi bi-stars"></i>
+          </div>
           <div>
             <h1 className="title">Focusflow Tasks</h1>
             <p className="subtitle">Stay organized, stay productive</p>
           </div>
         </div>
-        <button className="add-task-btn" onClick={() => setIsModalOpen(true)}>
+        <button
+          className="add-task-btn"
+          onClick={() => {
+            setIsModalOpen(true);
+            setIsEditing(false);
+            setTaskToEdit(null);
+            setNewTitle("");
+            setNewDescription("");
+            setNewPriority("Medium");
+            setNewCategory("Work");
+            setNewDueDate("");
+          }}
+        >
           + Add Task
         </button>
       </div>
 
       <div className="cards">
         <div className="card">
-          <div className="card-icon blue">📌</div>
+          <div className="card-icon blue">
+            <i className="bi bi-pin-angle-fill"></i>
+          </div>
           <p className="card-label">Total Tasks</p>
           <p className="card-value">{totalTasks}</p>
         </div>
 
         <div className="card">
-          <div className="card-icon green">✅</div>
+          <div className="card-icon green">
+            <i className="bi bi-check2-circle"></i>
+          </div>
           <p className="card-label">Completed</p>
           <p className="card-value">{completedTasks}</p>
         </div>
 
         <div className="card">
-          <div className="card-icon orange">🔴</div>
+          <div className="card-icon orange">
+            <i className="bi bi-exclamation-circle"></i>
+          </div>
           <p className="card-label">Active</p>
           <p className="card-value">{activeTasks}</p>
         </div>
 
         <div className="card">
-          <div className="card-icon purple">📈</div>
+          <div className="card-icon purple">
+            <i className="bi bi-bar-chart-line-fill"></i>
+          </div>
           <p className="card-label">Completion Rate</p>
           <p className="card-value">{completionRate}%</p>
         </div>
@@ -151,13 +214,37 @@ function App() {
                   )}
                   {task.description && <p>{task.description}</p>}
                 </div>
-                <button
-                  className="delete-btn"
-                  onClick={() => deleteTask(task.id)}
-                  title="Delete Task"
-                >
-                  <i className="bi bi-trash"></i>
-                </button>
+
+                <div className="menu-container">
+                  <button
+                    className="menu-btn"
+                    onClick={() =>
+                      setShowMenuId(showMenuId === task.id ? null : task.id)
+                    }
+                  >
+                    <i className="bi bi-three-dots-vertical"></i>
+                  </button>
+
+                  {showMenuId === task.id && (
+                    <div className="menu-dropdown">
+                      <button
+                        className="menu-icon-btn"
+                        onClick={() => handleEdit(task)}
+                      >
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        className="menu-icon-btn delete-icon-btn"
+                        onClick={() => deleteTask(task.id)}
+                      >
+                        <i
+                          className="bi bi-trash"
+                          style={{ color: "red" }}
+                        ></i>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -168,15 +255,19 @@ function App() {
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h3>Add New Task</h3>
+              <h3>{isEditing ? "Edit Task" : "Add New Task"}</h3>
               <button
                 className="close-btn"
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setIsEditing(false);
+                  setTaskToEdit(null);
+                }}
               >
                 ×
               </button>
             </div>
-            <form onSubmit={handleAddTask}>
+            <form onSubmit={handleSubmit}>
               <label>Task Title *</label>
               <input
                 type="text"
@@ -223,16 +314,26 @@ function App() {
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
               />
 
               <div className="modal-actions">
                 <button type="submit" className="add-task-btn">
-                  + Add Task
+                  {isEditing ? "Edit Task" : "+ Add Task"}
                 </button>
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setIsEditing(false);
+                    setTaskToEdit(null);
+                  }}
                 >
                   Cancel
                 </button>
