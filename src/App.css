@@ -12,11 +12,11 @@ body::before {
   overflow: hidden;
   background: radial-gradient(
     circle at bottom left,
-    #96adbd 0%,
-    #b9cada 25%,
-    #c9d4e7 50%,
-    #adb9dc 75%,
-    #d3abe9 100%
+    #94b2c7 0%,
+    #97a7b6 25%,
+    #a6b8d8 50%,
+    #7a85a6 75%,
+    #9f72b7 100%
   );
   filter: blur(2px);
   z-index: -1;
