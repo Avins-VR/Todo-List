@@ -344,6 +344,12 @@ function App() {
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
               />
               <div className="modal-actions">
                 <button type="submit" className="add-task-btn">
