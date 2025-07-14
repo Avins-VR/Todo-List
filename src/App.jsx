@@ -1,12 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 
-function App() {
-  const [totalTasks, setTotalTasks] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState(0);
-  const [activeTasks, setActiveTasks] = useState(0);
+// ✅ Chart.js imports
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-  const [tasks, setTasks] = useState([]);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+
+function App() {
+  // ✅ Load from localStorage
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem("tasks");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [totalTasks, setTotalTasks] = useState(() => Number(localStorage.getItem("totalTasks")) || 0);
+  const [completedTasks, setCompletedTasks] = useState(() => Number(localStorage.getItem("completedTasks")) || 0);
+  const [activeTasks, setActiveTasks] = useState(() => Number(localStorage.getItem("activeTasks")) || 0);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -19,19 +36,35 @@ function App() {
   const [newDueDate, setNewDueDate] = useState("");
 
   const [showMenuId, setShowMenuId] = useState(null);
+  const [showChart, setShowChart] = useState(false);
 
   const completionRate =
     totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
   const sortTasksByPriority = (taskList) => {
     const priorityOrder = { High: 1, Medium: 2, Low: 3 };
-    return taskList.sort(
-      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
-    );
+    return taskList.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
   };
+
+  // ✅ Save to localStorage
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem("totalTasks", totalTasks);
+  }, [totalTasks]);
+
+  useEffect(() => {
+    localStorage.setItem("completedTasks", completedTasks);
+  }, [completedTasks]);
+
+  useEffect(() => {
+    localStorage.setItem("activeTasks", activeTasks);
+  }, [activeTasks]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!newTitle.trim()) {
       alert("Task title is required!");
       return;
@@ -40,14 +73,7 @@ function App() {
     if (isEditing && taskToEdit) {
       const updatedTasks = tasks.map((task) =>
         task.id === taskToEdit.id
-          ? {
-              ...task,
-              title: newTitle,
-              description: newDescription,
-              priority: newPriority,
-              category: newCategory,
-              dueDate: newDueDate,
-            }
+          ? { ...task, title: newTitle, description: newDescription, priority: newPriority, category: newCategory, dueDate: newDueDate }
           : task
       );
       setTasks(sortTasksByPriority(updatedTasks));
@@ -61,11 +87,11 @@ function App() {
         dueDate: newDueDate,
         completed: false,
       };
-
       setTasks(sortTasksByPriority([newTask, ...tasks]));
       setTotalTasks(totalTasks + 1);
       setActiveTasks(activeTasks + 1);
     }
+
     setIsModalOpen(false);
     setIsEditing(false);
     setTaskToEdit(null);
@@ -81,7 +107,6 @@ function App() {
     const updatedTasks = tasks.map((task) => {
       if (task.id === id) {
         const newStatus = !task.completed;
-
         if (newStatus) {
           setCompletedTasks(completedTasks + 1);
           setActiveTasks(activeTasks - 1);
@@ -89,12 +114,10 @@ function App() {
           setCompletedTasks(completedTasks - 1);
           setActiveTasks(activeTasks + 1);
         }
-
         return { ...task, completed: newStatus };
       }
       return task;
     });
-
     setTasks(updatedTasks);
   };
 
@@ -123,6 +146,29 @@ function App() {
     setNewDueDate(task.dueDate);
     setIsModalOpen(true);
     setShowMenuId(null);
+  };
+
+  const chartData = {
+    labels: ["Completion"],
+    datasets: [
+      {
+        label: "Completed",
+        data: [completionRate],
+        backgroundColor: "#2ef788ff",
+      },
+      {
+        label: "Remaining",
+        data: [100 - completionRate],
+        backgroundColor: "#f94545ff",
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    indexAxis: "y",
+    plugins: { legend: { position: "bottom" } },
+    scales: { x: { max: 100, beginAtZero: true } },
   };
 
   return (
@@ -179,7 +225,11 @@ function App() {
           <p className="card-value">{activeTasks}</p>
         </div>
 
-        <div className="card">
+        <div
+          className="card"
+          onClick={() => setShowChart(!showChart)}
+          style={{ cursor: "pointer" }}
+        >
           <div className="card-icon purple">
             <i className="bi bi-bar-chart-line-fill"></i>
           </div>
@@ -195,52 +245,34 @@ function App() {
         ) : (
           <ul>
             {tasks.map((task) => (
-              <li
-                key={task.id}
-                className={task.completed ? "task completed" : "task"}
-              >
+              <li key={task.id} className={task.completed ? "task completed" : "task"}>
                 <input
                   type="checkbox"
                   checked={task.completed}
                   onChange={() => toggleTaskCompletion(task.id)}
                 />
                 <div className="task-content">
-                  <strong>{task.title}</strong> - {task.category} -{" "}
-                  {task.priority}{" "}
-                  {task.dueDate && (
-                    <>
-                      | <span>Due: {task.dueDate}</span>
-                    </>
-                  )}
+                  <strong>{task.title}</strong> - {task.category} - {task.priority}{" "}
+                  {task.dueDate && <>| <span>Due: {task.dueDate}</span></>}
                   {task.description && <p>{task.description}</p>}
                 </div>
-
                 <div className="menu-container">
                   <button
                     className="menu-btn"
-                    onClick={() =>
-                      setShowMenuId(showMenuId === task.id ? null : task.id)
-                    }
+                    onClick={() => setShowMenuId(showMenuId === task.id ? null : task.id)}
                   >
                     <i className="bi bi-three-dots-vertical"></i>
                   </button>
-
                   {showMenuId === task.id && (
                     <div className="menu-dropdown">
-                      <button
-                        className="menu-icon-btn"
-                        onClick={() => handleEdit(task)}
-                      >
+                      <button className="menu-icon-btn" onClick={() => handleEdit(task)}>
                         <i className="bi bi-pencil"></i>
                       </button>
                       <button
                         className="menu-icon-btn delete-icon-btn"
                         onClick={() => deleteTask(task.id)}
                       >
-                        <i
-                          className="bi bi-trash"
-                          style={{ color: "red" }}
-                        ></i>
+                        <i className="bi bi-trash" style={{ color: "red" }}></i>
                       </button>
                     </div>
                   )}
@@ -250,6 +282,13 @@ function App() {
           </ul>
         )}
       </div>
+
+      {showChart && (
+        <div className="chart-container">
+          <h3>Completion Rate Chart</h3>
+          <Bar data={chartData} options={chartOptions} />
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="modal-overlay">
@@ -276,21 +315,16 @@ function App() {
                 onChange={(e) => setNewTitle(e.target.value)}
                 required
               />
-
               <label>Description</label>
               <textarea
                 placeholder="Add more details (optional)"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
               ></textarea>
-
               <div className="form-row">
                 <div>
                   <label>Priority</label>
-                  <select
-                    value={newPriority}
-                    onChange={(e) => setNewPriority(e.target.value)}
-                  >
+                  <select value={newPriority} onChange={(e) => setNewPriority(e.target.value)}>
                     <option>Low</option>
                     <option>Medium</option>
                     <option>High</option>
@@ -298,30 +332,19 @@ function App() {
                 </div>
                 <div>
                   <label>Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                  >
+                  <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)}>
                     <option>Work</option>
                     <option>Personal</option>
                     <option>Learning</option>
                   </select>
                 </div>
               </div>
-
               <label>Due Date</label>
               <input
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSubmit(e);
-                  }
-                }}
               />
-
               <div className="modal-actions">
                 <button type="submit" className="add-task-btn">
                   {isEditing ? "Edit Task" : "+ Add Task"}

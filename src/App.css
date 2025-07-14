@@ -289,9 +289,15 @@ body::before {
   font-size: 14px;
   cursor: pointer;
 }
-/* ==================== RESPONSIVE ==================== */
-
-/* Small screens: up to 480px */
+.chart-container {
+  max-width: 500px;
+  margin: 20px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+/* RESPONSIVE  */
 @media (max-width: 480px) {
   .dashboard {
     margin: 20px auto;
